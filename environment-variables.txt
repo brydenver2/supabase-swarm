@@ -158,6 +158,45 @@ FUNCTIONS_VERIFY_JWT=true
 PGRST_DB_SCHEMAS=public,storage,graphql_public
 
 # =============================================================================
+# TRAEFIK LOAD BALANCER CONFIGURATION
+# =============================================================================
+# Traefik v3+ load balancer and SSL configuration
+
+# Domain Configuration
+TRAEFIK_DOMAIN=your-domain.com
+TRAEFIK_POSTGRES_DOMAIN=postgres.your-domain.com
+
+# SSL/TLS Configuration
+# Email for Let's Encrypt certificate notifications
+TRAEFIK_ACME_EMAIL=admin@your-domain.com
+# Set to 'true' to use Let's Encrypt production, 'false' for staging
+TRAEFIK_ACME_PRODUCTION=false
+
+# Security Settings
+# Enable rate limiting (requests per second)
+TRAEFIK_RATE_LIMIT=100
+# Enable IP whitelisting (comma-separated list, leave empty to disable)
+TRAEFIK_WHITELIST_IPS=
+
+# Dashboard Access (secure this in production!)
+TRAEFIK_DASHBOARD_ENABLED=true
+TRAEFIK_DASHBOARD_USER=admin
+TRAEFIK_DASHBOARD_PASSWORD=change-this-secure-password
+
+# =============================================================================
+# EXTERNAL DATABASE CONFIGURATION
+# =============================================================================
+# Set to 'true' to use an external database instead of the bundled one
+USE_EXTERNAL_DB=false
+
+# External Database Connection Details (only used if USE_EXTERNAL_DB=true)
+EXTERNAL_POSTGRES_HOST=your-external-db-host.com
+EXTERNAL_POSTGRES_PORT=5432
+EXTERNAL_POSTGRES_DB=postgres
+EXTERNAL_POSTGRES_PASSWORD=your-external-db-password
+EXTERNAL_POSTGRES_USER=postgres
+
+# =============================================================================
 # DOCKER CONFIGURATION
 # =============================================================================
 # Docker-specific settings
