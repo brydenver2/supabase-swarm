@@ -1,0 +1,10 @@
+# Dynamic Traefik Configuration
+# Additional middlewares and routers can be defined here
+
+# Example: Custom middleware for additional security
+# http:
+#   middlewares:
+#     custom-headers:
+#       headers:
+#         customResponseHeaders:
+#           X-Custom-Header: "MyValue"

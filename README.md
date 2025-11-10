@@ -27,6 +27,8 @@ If this configuration helped you get Supabase running smoothly, please consider 
 
 ## 🚀 Quick Start
 
+**New to this setup?** Check out the **[📖 Quick Start Guide](QUICKSTART.md)** for step-by-step instructions!
+
 ### Prerequisites
 
 - Docker Engine

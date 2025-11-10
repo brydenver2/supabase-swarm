@@ -18,6 +18,8 @@
 # These are the essential variables that must be configured for Supabase to work
 
 # Database Configuration
+# For internal database (default): Use 'db' as host
+# For external database: Set USE_EXTERNAL_DB=true and configure EXTERNAL_POSTGRES_* variables
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 POSTGRES_DB=postgres
