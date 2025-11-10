@@ -1,3 +1,19 @@
+# =============================================================================
+# Supabase Docker Compose Standalone Configuration
+# =============================================================================
+# This is the standalone Docker Compose version without Docker Swarm features.
+# For production deployments with Traefik load balancer, use docker-compose.yml
+# with Docker Swarm mode.
+#
+# This file is suitable for:
+# - Development environments
+# - Single-server deployments
+# - Testing and evaluation
+#
+# To use with external database, set USE_EXTERNAL_DB=true in .env and configure
+# EXTERNAL_POSTGRES_* variables. The db service below will need to be removed.
+# =============================================================================
+
 version: '3.8'
 
 services:

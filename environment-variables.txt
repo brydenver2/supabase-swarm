@@ -18,6 +18,8 @@
 # These are the essential variables that must be configured for Supabase to work
 
 # Database Configuration
+# For internal database (default): Use 'db' as host
+# For external database: Set USE_EXTERNAL_DB=true and configure EXTERNAL_POSTGRES_* variables
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 POSTGRES_DB=postgres
@@ -156,6 +158,50 @@ FUNCTIONS_VERIFY_JWT=true
 # PostgREST database schemas
 
 PGRST_DB_SCHEMAS=public,storage,graphql_public
+
+# =============================================================================
+# TRAEFIK LOAD BALANCER CONFIGURATION
+# =============================================================================
+# Traefik v3+ load balancer and SSL configuration
+
+# Deploy Traefik service (set to 'false' if using external Traefik)
+# When false, you should remove or comment out the traefik service in docker-compose.yml
+# Labels on Kong will remain for external Traefik to discover
+DEPLOY_TRAEFIK=true
+
+# Domain Configuration
+TRAEFIK_DOMAIN=your-domain.com
+TRAEFIK_POSTGRES_DOMAIN=postgres.your-domain.com
+
+# SSL/TLS Configuration
+# Email for Let's Encrypt certificate notifications
+TRAEFIK_ACME_EMAIL=admin@your-domain.com
+# Set to 'true' to use Let's Encrypt production, 'false' for staging
+TRAEFIK_ACME_PRODUCTION=false
+
+# Security Settings
+# Enable rate limiting (requests per second)
+TRAEFIK_RATE_LIMIT=100
+# Enable IP whitelisting (comma-separated list, leave empty to disable)
+TRAEFIK_WHITELIST_IPS=
+
+# Dashboard Access (secure this in production!)
+TRAEFIK_DASHBOARD_ENABLED=true
+TRAEFIK_DASHBOARD_USER=admin
+TRAEFIK_DASHBOARD_PASSWORD=change-this-secure-password
+
+# =============================================================================
+# EXTERNAL DATABASE CONFIGURATION
+# =============================================================================
+# Set to 'true' to use an external database instead of the bundled one
+USE_EXTERNAL_DB=false
+
+# External Database Connection Details (only used if USE_EXTERNAL_DB=true)
+EXTERNAL_POSTGRES_HOST=your-external-db-host.com
+EXTERNAL_POSTGRES_PORT=5432
+EXTERNAL_POSTGRES_DB=postgres
+EXTERNAL_POSTGRES_PASSWORD=your-external-db-password
+EXTERNAL_POSTGRES_USER=postgres
 
 # =============================================================================
 # DOCKER CONFIGURATION

@@ -7,7 +7,7 @@
 # For Docker Compose: Uses existing docker-compose.standalone.yml
 # For Docker Swarm: Creates external volumes, networks, and configs
 #
-# Usage: ./setup.sh [--swarm|--compose]
+# Usage: ./setup.sh [--swarm|--compose] [--external-db]
 # =============================================================================
 
 set -e
@@ -21,6 +21,7 @@ NC='\033[0m' # No Color
 
 # Default mode
 MODE="compose"
+USE_EXTERNAL_DB="false"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -33,10 +34,15 @@ while [[ $# -gt 0 ]]; do
       MODE="compose"
       shift
       ;;
+    --external-db)
+      USE_EXTERNAL_DB="true"
+      shift
+      ;;
     -h|--help)
-      echo "Usage: $0 [--swarm|--compose]"
-      echo "  --swarm    Setup for Docker Swarm deployment (creates external resources)"
-      echo "  --compose  Setup for Docker Compose deployment (uses standalone file)"
+      echo "Usage: $0 [--swarm|--compose] [--external-db]"
+      echo "  --swarm        Setup for Docker Swarm deployment (creates external resources)"
+      echo "  --compose      Setup for Docker Compose deployment (uses standalone file)"
+      echo "  --external-db  Configure for external database (skips internal DB setup)"
       exit 0
       ;;
     *)
@@ -48,6 +54,7 @@ done
 
 echo -e "${BLUE}🚀 Supabase Docker Setup Script${NC}"
 echo -e "${BLUE}Mode: ${MODE}${NC}"
+echo -e "${BLUE}External DB: ${USE_EXTERNAL_DB}${NC}"
 echo ""
 
 # Function to print status
@@ -107,12 +114,43 @@ fi
 echo ""
 echo -e "${BLUE}Creating external volumes...${NC}"
 
-volumes=(
-    "supabase-production-storage-data"
-    "supabase-production-functions-data"
-    "supabase-production-db-data"
-    "supabase-production-db-config"
-)
+# Check if DEPLOY_TRAEFIK is set, default to true
+DEPLOY_TRAEFIK_VAR=$(grep "^DEPLOY_TRAEFIK=" .env 2>/dev/null | cut -d'=' -f2 || echo "true")
+
+if [ "$USE_EXTERNAL_DB" = "true" ]; then
+    print_warning "Using external database - skipping database volumes"
+    if [ "$DEPLOY_TRAEFIK_VAR" = "false" ]; then
+        print_warning "Using external Traefik - skipping Traefik certificate volume"
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+        )
+    else
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+            "traefik-certificates"
+        )
+    fi
+else
+    if [ "$DEPLOY_TRAEFIK_VAR" = "false" ]; then
+        print_warning "Using external Traefik - skipping Traefik certificate volume"
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+            "supabase-production-db-data"
+            "supabase-production-db-config"
+        )
+    else
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+            "supabase-production-db-data"
+            "supabase-production-db-config"
+            "traefik-certificates"
+        )
+    fi
+fi
 
 for volume in "${volumes[@]}"; do
     if docker volume ls | grep -q "$volume"; then
@@ -136,18 +174,35 @@ if [ "$MODE" = "swarm" ]; then
     fi
     
     # Create configs from files in volumes directory
-    configs=(
-        "99-logs.sql:volumes/db/logs.sql"
-        "99-realtime.sql:volumes/db/realtime.sql"
-        "99-roles.sql:volumes/db/roles.sql"
-        "98-webhooks.sql:volumes/db/webhooks.sql"
-        "99-jwt.sql:volumes/db/jwt.sql"
-        "97-_supabase.sql:volumes/db/_supabase.sql"
-        "99-pooler.sql:volumes/db/pooler.sql"
-        "vector.yml:volumes/logs/vector.yml"
-        "kong.yml:volumes/api/kong.yml"
-        "main.ts:volumes/functions/main/index.ts"
-    )
+    if [ "$DEPLOY_TRAEFIK_VAR" = "false" ]; then
+        print_warning "Using external Traefik - skipping Traefik config"
+        configs=(
+            "99-logs.sql:volumes/db/logs.sql"
+            "99-realtime.sql:volumes/db/realtime.sql"
+            "99-roles.sql:volumes/db/roles.sql"
+            "98-webhooks.sql:volumes/db/webhooks.sql"
+            "99-jwt.sql:volumes/db/jwt.sql"
+            "97-_supabase.sql:volumes/db/_supabase.sql"
+            "99-pooler.sql:volumes/db/pooler.sql"
+            "vector.yml:volumes/logs/vector.yml"
+            "kong.yml:volumes/api/kong.yml"
+            "main.ts:volumes/functions/main/index.ts"
+        )
+    else
+        configs=(
+            "99-logs.sql:volumes/db/logs.sql"
+            "99-realtime.sql:volumes/db/realtime.sql"
+            "99-roles.sql:volumes/db/roles.sql"
+            "98-webhooks.sql:volumes/db/webhooks.sql"
+            "99-jwt.sql:volumes/db/jwt.sql"
+            "97-_supabase.sql:volumes/db/_supabase.sql"
+            "99-pooler.sql:volumes/db/pooler.sql"
+            "vector.yml:volumes/logs/vector.yml"
+            "kong.yml:volumes/api/kong.yml"
+            "main.ts:volumes/functions/main/index.ts"
+            "traefik.yml:volumes/traefik/traefik.yml"
+        )
+    fi
     
     for config in "${configs[@]}"; do
         IFS=':' read -r config_name file_path <<< "$config"
@@ -219,6 +274,47 @@ fi
 if grep -q "AWS_SECRET_ACCESS_KEY=your-aws-secret-key" .env; then
     print_warning "AWS_SECRET_ACCESS_KEY needs to be configured"
     echo "Get credentials from AWS IAM Console or your S3-compatible provider"
+fi
+
+# Check external database configuration if enabled
+echo ""
+if [ "$USE_EXTERNAL_DB" = "true" ] || grep -q "USE_EXTERNAL_DB=true" .env 2>/dev/null; then
+    echo -e "${BLUE}Checking external database configuration...${NC}"
+    
+    if grep -q "EXTERNAL_POSTGRES_HOST=your-external-db-host.com" .env; then
+        print_warning "EXTERNAL_POSTGRES_HOST needs to be configured"
+        echo "Set this to your external database hostname or IP address"
+    fi
+    
+    if grep -q "EXTERNAL_POSTGRES_PASSWORD=your-external-db-password" .env; then
+        print_warning "EXTERNAL_POSTGRES_PASSWORD needs to be configured"
+        echo "Set this to your external database password"
+    fi
+    
+    print_warning "When using external database:"
+    echo "  - Ensure the database is accessible from your Docker network"
+    echo "  - Run the initialization SQL scripts from volumes/db/ on your external database"
+    echo "  - Set POSTGRES_HOST to your external database host in .env"
+    echo "  - The internal 'db' service will not be deployed"
+fi
+
+# Check Traefik configuration
+echo ""
+echo -e "${BLUE}Checking Traefik load balancer configuration...${NC}"
+
+if grep -q "TRAEFIK_DOMAIN=your-domain.com" .env; then
+    print_warning "TRAEFIK_DOMAIN needs to be configured"
+    echo "Set this to your domain name for SSL certificate generation"
+fi
+
+if grep -q "TRAEFIK_ACME_EMAIL=admin@your-domain.com" .env; then
+    print_warning "TRAEFIK_ACME_EMAIL needs to be configured"
+    echo "Set this to your email for Let's Encrypt certificate notifications"
+fi
+
+if grep -q "TRAEFIK_DASHBOARD_PASSWORD=change-this-secure-password" .env; then
+    print_warning "TRAEFIK_DASHBOARD_PASSWORD needs to be changed"
+    echo "Generate a secure password for the Traefik dashboard"
 fi
 
 echo ""

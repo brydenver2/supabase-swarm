@@ -6,11 +6,29 @@
 
 A production-ready Supabase self-hosting configuration that works with Docker Compose, Docker Swarm, and Portainer.
 
+## ✨ New Features
+
+### 🔒 Traefik v3 Load Balancer
+- **Automatic SSL/TLS**: Let's Encrypt integration for secure HTTPS
+- **Rate Limiting**: Protection against abuse and DDoS
+- **Security Headers**: HSTS, X-Frame-Options, CSP, and more
+- **High Availability**: Production-ready load balancing
+- **External Traefik Support**: Use your existing Traefik instance
+
+### 🗄️ External Database Support
+- **Flexible Configuration**: Use managed databases (AWS RDS, Google Cloud SQL, etc.)
+- **Easy Migration**: Simple setup with external PostgreSQL instances
+- **Production Ready**: Enterprise-grade database options
+
+📖 **[Read Traefik Setup Guide](TRAEFIK_SETUP.md)** | **[Read External Database Guide](EXTERNAL_DATABASE.md)** | **[Using External Traefik](EXTERNAL_TRAEFIK.md)**
+
 ## ⭐ Love this project?
 
 If this configuration helped you get Supabase running smoothly, please consider giving it a star! It really helps others discover this solution.
 
 ## 🚀 Quick Start
+
+**New to this setup?** Check out the **[📖 Quick Start Guide](QUICKSTART.md)** for step-by-step instructions!
 
 ### Prerequisites
 
