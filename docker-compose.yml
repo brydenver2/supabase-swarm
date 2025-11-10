@@ -1,7 +1,17 @@
 version: '3.8'
 
 services:
+  # =============================================================================
   # Traefik - Load Balancer and SSL Termination
+  # =============================================================================
+  # To use an external Traefik instance instead of deploying this one:
+  # 1. Set DEPLOY_TRAEFIK=false in your .env file
+  # 2. Comment out or remove this entire traefik service section
+  # 3. Keep the labels on Kong service below - they will be discovered by your external Traefik
+  # 4. Ensure your external Traefik is configured to watch the supabase_overlay network
+  #
+  # If you want to deploy the bundled Traefik, leave this section as-is.
+  # =============================================================================
   traefik:
     hostname: traefik
     image: traefik:v3.2
@@ -89,6 +99,11 @@ services:
       NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
 
   # Kong - API Gateway
+  # =============================================================================
+  # Traefik Labels Configuration
+  # These labels are used by Traefik (bundled or external) to route traffic to Kong.
+  # Keep these labels even if you're using an external Traefik instance.
+  # =============================================================================
   kong:
     hostname: kong
     networks:

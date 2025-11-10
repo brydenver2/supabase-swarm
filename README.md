@@ -13,13 +13,14 @@ A production-ready Supabase self-hosting configuration that works with Docker Co
 - **Rate Limiting**: Protection against abuse and DDoS
 - **Security Headers**: HSTS, X-Frame-Options, CSP, and more
 - **High Availability**: Production-ready load balancing
+- **External Traefik Support**: Use your existing Traefik instance
 
 ### 🗄️ External Database Support
 - **Flexible Configuration**: Use managed databases (AWS RDS, Google Cloud SQL, etc.)
 - **Easy Migration**: Simple setup with external PostgreSQL instances
 - **Production Ready**: Enterprise-grade database options
 
-📖 **[Read Traefik Setup Guide](TRAEFIK_SETUP.md)** | **[Read External Database Guide](EXTERNAL_DATABASE.md)**
+📖 **[Read Traefik Setup Guide](TRAEFIK_SETUP.md)** | **[Read External Database Guide](EXTERNAL_DATABASE.md)** | **[Using External Traefik](EXTERNAL_TRAEFIK.md)**
 
 ## ⭐ Love this project?
 

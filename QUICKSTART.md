@@ -121,6 +121,34 @@ done
 docker stack deploy -c docker-compose.yml supabase
 ```
 
+## Production Setup: Using External Traefik
+
+If you already have Traefik running in your Docker Swarm cluster:
+
+```bash
+# 1. Configure in .env
+nano .env
+# Set:
+# DEPLOY_TRAEFIK=false
+# TRAEFIK_DOMAIN=your-domain.com  # Still needed for routing
+# TRAEFIK_RATE_LIMIT=100  # Still needed for middleware
+
+# 2. Comment out or remove the traefik service from docker-compose.yml
+# Keep all labels on the Kong service - they're needed for your external Traefik
+
+# 3. Run setup
+./setup.sh --swarm
+
+# 4. Deploy
+docker stack deploy -c docker-compose.yml supabase
+
+# Your external Traefik will automatically discover and route traffic to Supabase
+```
+
+📖 **See [EXTERNAL_TRAEFIK.md](EXTERNAL_TRAEFIK.md) for detailed instructions**
+docker stack deploy -c docker-compose.yml supabase
+```
+
 ## Configuration Checklist
 
 ### Essential Variables (All Setups)

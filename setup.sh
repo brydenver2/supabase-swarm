@@ -114,21 +114,42 @@ fi
 echo ""
 echo -e "${BLUE}Creating external volumes...${NC}"
 
+# Check if DEPLOY_TRAEFIK is set, default to true
+DEPLOY_TRAEFIK_VAR=$(grep "^DEPLOY_TRAEFIK=" .env 2>/dev/null | cut -d'=' -f2 || echo "true")
+
 if [ "$USE_EXTERNAL_DB" = "true" ]; then
     print_warning "Using external database - skipping database volumes"
-    volumes=(
-        "supabase-production-storage-data"
-        "supabase-production-functions-data"
-        "traefik-certificates"
-    )
+    if [ "$DEPLOY_TRAEFIK_VAR" = "false" ]; then
+        print_warning "Using external Traefik - skipping Traefik certificate volume"
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+        )
+    else
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+            "traefik-certificates"
+        )
+    fi
 else
-    volumes=(
-        "supabase-production-storage-data"
-        "supabase-production-functions-data"
-        "supabase-production-db-data"
-        "supabase-production-db-config"
-        "traefik-certificates"
-    )
+    if [ "$DEPLOY_TRAEFIK_VAR" = "false" ]; then
+        print_warning "Using external Traefik - skipping Traefik certificate volume"
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+            "supabase-production-db-data"
+            "supabase-production-db-config"
+        )
+    else
+        volumes=(
+            "supabase-production-storage-data"
+            "supabase-production-functions-data"
+            "supabase-production-db-data"
+            "supabase-production-db-config"
+            "traefik-certificates"
+        )
+    fi
 fi
 
 for volume in "${volumes[@]}"; do
@@ -153,19 +174,35 @@ if [ "$MODE" = "swarm" ]; then
     fi
     
     # Create configs from files in volumes directory
-    configs=(
-        "99-logs.sql:volumes/db/logs.sql"
-        "99-realtime.sql:volumes/db/realtime.sql"
-        "99-roles.sql:volumes/db/roles.sql"
-        "98-webhooks.sql:volumes/db/webhooks.sql"
-        "99-jwt.sql:volumes/db/jwt.sql"
-        "97-_supabase.sql:volumes/db/_supabase.sql"
-        "99-pooler.sql:volumes/db/pooler.sql"
-        "vector.yml:volumes/logs/vector.yml"
-        "kong.yml:volumes/api/kong.yml"
-        "main.ts:volumes/functions/main/index.ts"
-        "traefik.yml:volumes/traefik/traefik.yml"
-    )
+    if [ "$DEPLOY_TRAEFIK_VAR" = "false" ]; then
+        print_warning "Using external Traefik - skipping Traefik config"
+        configs=(
+            "99-logs.sql:volumes/db/logs.sql"
+            "99-realtime.sql:volumes/db/realtime.sql"
+            "99-roles.sql:volumes/db/roles.sql"
+            "98-webhooks.sql:volumes/db/webhooks.sql"
+            "99-jwt.sql:volumes/db/jwt.sql"
+            "97-_supabase.sql:volumes/db/_supabase.sql"
+            "99-pooler.sql:volumes/db/pooler.sql"
+            "vector.yml:volumes/logs/vector.yml"
+            "kong.yml:volumes/api/kong.yml"
+            "main.ts:volumes/functions/main/index.ts"
+        )
+    else
+        configs=(
+            "99-logs.sql:volumes/db/logs.sql"
+            "99-realtime.sql:volumes/db/realtime.sql"
+            "99-roles.sql:volumes/db/roles.sql"
+            "98-webhooks.sql:volumes/db/webhooks.sql"
+            "99-jwt.sql:volumes/db/jwt.sql"
+            "97-_supabase.sql:volumes/db/_supabase.sql"
+            "99-pooler.sql:volumes/db/pooler.sql"
+            "vector.yml:volumes/logs/vector.yml"
+            "kong.yml:volumes/api/kong.yml"
+            "main.ts:volumes/functions/main/index.ts"
+            "traefik.yml:volumes/traefik/traefik.yml"
+        )
+    fi
     
     for config in "${configs[@]}"; do
         IFS=':' read -r config_name file_path <<< "$config"

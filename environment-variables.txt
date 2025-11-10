@@ -164,6 +164,11 @@ PGRST_DB_SCHEMAS=public,storage,graphql_public
 # =============================================================================
 # Traefik v3+ load balancer and SSL configuration
 
+# Deploy Traefik service (set to 'false' if using external Traefik)
+# When false, you should remove or comment out the traefik service in docker-compose.yml
+# Labels on Kong will remain for external Traefik to discover
+DEPLOY_TRAEFIK=true
+
 # Domain Configuration
 TRAEFIK_DOMAIN=your-domain.com
 TRAEFIK_POSTGRES_DOMAIN=postgres.your-domain.com
